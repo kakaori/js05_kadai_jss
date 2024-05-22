@@ -102,3 +102,70 @@
     opacity: 8%;
   }
   
+
+
+
+body{
+  line-height: 1.6;
+}
+
+#contentsLaw a{
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  color: #1042a4;
+}
+
+#EnactStatement{
+  padding-bottom: 0.5em;
+}
+
+._div_PartTitle{
+  margin-top: 2em;
+}
+
+._div_TOCLabel{
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.Article{
+  margin-top: 0.5em;
+}
+
+.followingPart{
+  font-size: 1.5em;
+}
+
+.Chapter{
+  margin-top: 2em;
+}
+
+.ChapterTitle{
+  font-size: 1.3em;
+}
+
+.Section{
+  background: #f2f2f2;
+  margin: 1em 0 0.5em;
+  padding: 0.2em 0;
+}
+
+
+
+#minpo #innerDocument > *:first-child{
+  background-image: linear-gradient(to right, #f78ca0 0%, #f9748f 19%, #fd868c 60%, #fe9a8b 100%);
+  color: #fff;
+  padding: 0.5em;
+  border-radius: 4px;
+}
+
+#kenpo #innerDocument > *:first-child{
+  background-image: linear-gradient(-20deg, #00cdac 0%, #8ddad5 100%);
+  color: #fff;
+  padding: 0.5em;
+  border-radius: 6px;
+}
+
+
+
+

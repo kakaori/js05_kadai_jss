@@ -21,13 +21,13 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app); // RealtimeDatabase使うよ
 
 
-
 //###############################################
 //GoogleAuth(認証用)
 const provider = new GoogleAuthProvider();
 const auth = getAuth();
 
-// 読み込みたい値を設定する
+// 読み込みたい値を設定する(法律分追加)
+import { kenpoText } from './import_kenpo.js';
 import { minpoText } from './import_minpo.js';
 
 
@@ -46,24 +46,30 @@ function butotnClick(){
 
         const etAdditional = getAdditionalUserInfo(result);
 
-            if (!etAdditional.isNewUser) {
+            if (etAdditional.isNewUser) {
                 // 初めてのログインの場合の処理
 
-                const kenpoText = "<div>憲法テスト</div>";
-
-                // const words = themeText.split(',');
+                // const words = themeText.split(',');法律分フォルダ追加
                 const uid = result.user.uid;
-                const dbRefminpo = ref(db, "users/"+uid+"/mimpo/"); 
+                const dbRefkenpo = ref(db, "users/"+uid+"/kenpo/");
+                const dbRefminpo = ref(db, "users/"+uid+"/minpo/");
 
-                // dataCount = words.length;
-                // for (let i = 0; i < words.length; i++) {
-                    const minpodata = {
-                        minpo: minpoText
-                    }
-                    const newPostRef = push(dbRefminpo);
-                    set(newPostRef, minpodata);
-                // }
-            }
+                //憲法追加
+                const kenpodata = {
+                    kenpo: kenpoText
+                }
+                const newPostRefkenpo = push(dbRefkenpo);
+                set(newPostRefkenpo, kenpodata);
+                
+
+                //民法追加
+                const minpodata = {
+                    minpo: minpoText
+                }
+                const newPostRefminpo = push(dbRefminpo);
+                set(newPostRefminpo, minpodata);
+
+        }
         
         }).catch((error) => {
         // ここでエラーを処理します。
@@ -92,35 +98,13 @@ onAuthStateChanged(auth, (user) => {
                 loginName.textContent = profile.displayName;
             });
             login.style.display ="none";
-            yokoso.style.display ="block";
-        } else {
-            login.style.display ="block";
-            yokoso.style.display ="none";
+            yokoso.style.display ="flex";
         }
+    } else {
+        login.style.display ="block";
+        yokoso.style.display ="none";
     }
 })
-
-//###############################################
-//Logout処理
-let logoutButton = document.getElementById('out');
-logoutButton.addEventListener('click', logoutbutotnClick);
-function logoutbutotnClick(){
-    // signInWithRedirect(auth, provider);
-    signOut(auth).then(() => {
-        // Sign-out successful.
-        _redirect();
-    }).catch((error) => {
-        // An error happened.
-        console.error(error);
-    });
-}
-
-//###############################################
-//Login画面へリダイレクト(関数作成)
-function _redirect(){
-    location.href="index.html";
-}
-
 
 
 //###############################################
@@ -131,17 +115,17 @@ onAuthStateChanged(auth, (user) => {
         // マーカー・入力フォームを作成
         const inputArea = document.createElement('div');
         inputArea.id = 'inputArea';
-        inputArea.className = 'hidden absolute';
+        inputArea.className = 'hidden absolute p-4 shadow-lg rounded bg-white';
 
         inputArea.innerHTML = `
-            <div id="imputmarker" class="flex">
-                <button id="imputmarker_y" class="bg-yellow-200" onclick="document.dispatchEvent(new KeyboardEvent('keydown', {'key': '1'}));">黄色</button>
-                <button id="imputmarker_o" class="bg-orange-300" onclick="document.dispatchEvent(new KeyboardEvent('keydown', {'key': '2'}));">オレンジ</button>
-                <button id="imputmarker_g" class="bg-lime-300" onclick="document.dispatchEvent(new KeyboardEvent('keydown', {'key': '3'}));">緑</button>
+            <div id="imputmarker" class="flex mb-2">
+                <button id="imputmarker_y" class="bg-yellow-200 w-6 h-6 rounded-sm hover:opacity-70" onclick="document.dispatchEvent(new KeyboardEvent('keydown', {'key': '1'}));"> </button>
+                <button id="imputmarker_o" class="bg-orange-300 w-6 h-6 rounded-sm mx-2 hover:opacity-70" onclick="document.dispatchEvent(new KeyboardEvent('keydown', {'key': '2'}));"> </button>
+                <button id="imputmarker_g" class="bg-lime-300 w-6 h-6 rounded-sm hover:opacity-70" onclick="document.dispatchEvent(new KeyboardEvent('keydown', {'key': '3'}));"> </button>
             </div>
             <div id="">
-                <button id="memoinput" onclick="document.dispatchEvent(new KeyboardEvent('keydown', {'key': '4'}));">メモ</button>
-                <button id="delete" onclick="document.dispatchEvent(new KeyboardEvent('keydown', {'key': '5'}));">削除</button>
+                <button id="memoinput" class="bg-gray-200 px-3 py-1 text-sm hover:opacity-70" onclick="document.dispatchEvent(new KeyboardEvent('keydown', {'key': '4'}));">メモ</button>
+                <button id="delete" class="align-bottom" onclick="document.dispatchEvent(new KeyboardEvent('keydown', {'key': '5'}));"><input type="image" src="./images/clear.svg" class="block w-6 max-w-6 cursor-pointer opacity-50 hover:opacity-20"></button>
             </div>
         `;
         document.body.appendChild(inputArea);
@@ -150,22 +134,23 @@ onAuthStateChanged(auth, (user) => {
         //「メモ」をクリックしたらテキストエリアを表示する
         const textArea = document.createElement('div');
         textArea.id = 'textarea';
-        textArea.className = 'hidden absolute';
+        textArea.className = 'hidden absolute p-4 shadow-lg rounded bg-white';
 
         textArea.innerHTML = `
             <div id="textarea">
-                <textarea id="memotext" name="memo" rows="5" cols="33"></textarea>
-                <button id="memosave" class="block bg-gray-100 rounded-lg py-3 w-full m-auto text-center transition duration-100 hover:bg-gray-200 active:bg-gray-300 mb-8 md:w-2/4">保存</button>
+                <textarea id="memotext" class="block mb-2 text-sm border border-2" name="memo" rows="3" cols="20"></textarea>
+                <button id="memosave" class="bg-gray-200 px-3 py-1 text-sm hover:opacity-70">保存</button>
+                <button id="memoclose" class="border border-gray-200 px-3 py-1 text-sm hover:opacity-70">閉じる</button>
             </div>
             `;
         document.body.appendChild(textArea);
 
 
-        let memoInput = document.getElementById('memoinput');
-        memoInput.addEventListener('click', memoInputClick);
-        function memoInputClick(){
-            textArea.style.display = 'block';
-        }
+        // let memoInput = document.getElementById('memoinput');
+        // memoInput.addEventListener('click', memoInputClick);
+        // function memoInputClick(){
+        //     textArea.style.display = 'block';
+        // }
 
 
         // テキスト選択時のイベントリスナー
@@ -194,24 +179,21 @@ onAuthStateChanged(auth, (user) => {
         });
 
 
-
-
-
         const uid = user.uid;
-        const dbRefminpo = ref(db, "users/"+uid+"/mimpo/");
+        const dbRefkenpo = ref(db, "users/"+uid+"/kenpo/");
+        const dbRefminpo = ref(db, "users/"+uid+"/minpo/");
 
-        //データ表示
-        onChildAdded(dbRefminpo,function(data){
+
+
+
+        //データ表示 憲法
+        onChildAdded(dbRefkenpo,function(data){
             const key = data.key;//削除・更新に必須
-            const minpodata = data.val().minpo;
+            const kenpodata = data.val().kenpo;
 
-    
-            let htmlminpo = '';
-                htmlminpo += minpodata;
-                htmlminpo += '';
-
-                document.getElementById('minpo_text').insertAdjacentHTML('afterbegin', htmlminpo);
-
+            //民法のデータを表示
+            let htmlkenpo = kenpodata;
+            document.getElementById('kenpo_text').insertAdjacentHTML('afterbegin', htmlkenpo);
 
             //データを更新 mark・メモ保存
             document.addEventListener('keydown', function(event) {
@@ -240,14 +222,66 @@ onAuthStateChanged(auth, (user) => {
                     range.deleteContents();
                     range.insertNode(span);
                 } else if (event.key === '4') {
-                    span.className = 'border-b border-b-rose-300';
-                    range.deleteContents();
-                    range.insertNode(span);
+                    
+                    // <textarea>を表示
+                    document.getElementById('textarea').style.display = 'block';
+                    // <textarea>にフォーカスを移動
+                    document.getElementById('memotext').focus();
+                    
+                    // メモ保存ボタンがクリックされたときの処理
+                    document.getElementById('memosave').addEventListener('click', function() {
+                        span.className = 'border-b border-b-rose-300';
+                        range.deleteContents();
+                        range.insertNode(span);
+                    // textareaからメモのテキストを取得
+                        const memoText = document.getElementById('memotext').value.trim();
+                        if (memoText === '') return; // メモが空の場合は何もしない
+                        
+                        // 選択された文字列の親要素を取得
+                        let selectedElement = range.commonAncestorContainer.nodeType === Node.ELEMENT_NODE
+                            ? range.commonAncestorContainer.closest('div._div_ParagraphSentence, div._div_ArticleTitle')
+                            : range.commonAncestorContainer.parentElement.closest('div._div_ParagraphSentence, div._div_ArticleTitle');
+                        console.log(selectedElement);
+                        
+                        if (selectedElement) {
+                            // 新しい <p> 要素を作成し、メモのテキストを追加
+                            const memoParagraph = document.createElement('p');
+                            memoParagraph.textContent = memoText;
+                            memoParagraph.classList.add('memotext_p', 'text-rose-300', 'text-xs');
+                            
+                            // メモを追加
+                            selectedElement.appendChild(memoParagraph);
+                            selectedElement = "";
+                            // メモを fullTextHTML に含める処理
+                            const contentsLawElement = document.getElementById('kenpo_text');
+                            const fullTextHTML = contentsLawElement.innerHTML;
+                            
+                            // メモを保存する処理を追加する場合はここに記述
+                            // 例えば、Firestoreやローカルストレージに保存するなど
+                            update(ref(db, "users/" + uid + "/kenpo/" + key), {
+                                kenpo: fullTextHTML
+                            });
+                                    
+                            // テキストエリアを空にする
+                            document.getElementById('memotext').value = '';
+                            
+                            // <textarea>を非表示にする
+                            document.getElementById('textarea').style.display = 'none';
+
+                        } else {
+                            console.error('Selected element not found.');
+                        }
+                    });
+                    //閉じるボタンを押された時
+                    document.getElementById('memoclose').addEventListener('click', function() {
+                        // <textarea>を非表示にする
+                        document.getElementById('textarea').style.display = 'none';
+                    });
                 } else if (event.key === '5') {
-                    // spanタグを削除する処理
+                    // spanタグとその関連するメモを削除する処理
                     const container = range.commonAncestorContainer;
                     let spanToRemove;
-            
+                    
                     if (container.nodeType === Node.TEXT_NODE) {
                         // 親ノードがspanタグかどうかを確認
                         if (container.parentNode.tagName === 'SPAN') {
@@ -263,38 +297,234 @@ onAuthStateChanged(auth, (user) => {
                         });
                     }
             
-                    // spanタグを削除
+                    // spanタグとその関連するメモを削除
                     if (spanToRemove) {
                         const parent = spanToRemove.parentNode;
                         while (spanToRemove.firstChild) {
                             parent.insertBefore(spanToRemove.firstChild, spanToRemove);
                         }
                         parent.removeChild(spanToRemove);
+            
+                        // そのspanタグに続くメモ要素も削除
+                        const nextSibling = parent.querySelector('.memotext_p');
+                        if (nextSibling) {
+                            nextSibling.remove();
+                        }
+            
+                        // メモを fullTextHTML に含める処理
+                        const contentsLawElement = document.getElementById('kenpo_text');
+                        const fullTextHTML = contentsLawElement.innerHTML;
+            
+                        // メモを保存する処理を追加する場合はここに記述
+                        // 例えば、Firestoreやローカルストレージに保存するなど
+                        update(ref(db, "users/" + uid + "/kenpo/" + key), {
+                            kenpo: fullTextHTML
+                        });
                     }
                 } else {
                     return; // 他のキーが押された場合は何もしない
                 }
+                        
+                // <main id="contentsLaw">配下の全HTMLを取得
+                const contentsLawElement = document.getElementById('kenpo_text');
+                const fullTextHTML = contentsLawElement.innerHTML;
+                        
+                update(ref(db, "users/" + uid + "/kenpo/" + key), {
+                    kenpo: fullTextHTML
+                });
+                
             
+            });//document.addEventListener('keydown', function(event) {
+        
+        
+        });//end onChildAdded(dbRefkenpo,function(data){ 
+        //end データ表示 憲法
+
+
+
+
+
+        //データ表示 民法    ※他の法律にコピーする
+        onChildAdded(dbRefminpo,function(data){
+            const key = data.key;//削除・更新に必須
+            const minpodata = data.val().minpo;
+
+            //民法のデータを表示
+            let htmlminpo = minpodata;
+            document.getElementById('minpo_text').insertAdjacentHTML('afterbegin', htmlminpo);
+
+            //データを更新 mark・メモ保存
+            document.addEventListener('keydown', function(event) {
+                const selection = window.getSelection();
+                if (selection.rangeCount === 0) return; // 選択範囲がない場合は何もしない
+            
+                const range = selection.getRangeAt(0);
+                const selectedText = selection.toString().trim(); // 選択した文字列
+            
+                if (selectedText === '') return; // 選択テキストが空の場合は何もしない
+            
+                const span = document.createElement('span');
+                span.textContent = selectedText;
+            
+                // キーに応じてクラス名を設定
+                if (event.key === '1') {
+                    span.className = 'bg-yellow-200';
+                    range.deleteContents();
+                    range.insertNode(span);
+                } else if (event.key === '2') {
+                    span.className = 'bg-orange-300';
+                    range.deleteContents();
+                    range.insertNode(span);
+                } else if (event.key === '3') {
+                    span.className = 'bg-lime-300';
+                    range.deleteContents();
+                    range.insertNode(span);
+                } else if (event.key === '4') {
+                    
+                    // <textarea>を表示
+                    document.getElementById('textarea').style.display = 'block';
+                    // <textarea>にフォーカスを移動
+                    document.getElementById('memotext').focus();
+                    
+                    // メモ保存ボタンがクリックされたときの処理
+                    document.getElementById('memosave').addEventListener('click', function() {
+                        span.className = 'border-b border-b-rose-300';
+                        range.deleteContents();
+                        range.insertNode(span);
+                    // textareaからメモのテキストを取得
+                        const memoText = document.getElementById('memotext').value.trim();
+                        if (memoText === '') return; // メモが空の場合は何もしない
+                        
+                        // 選択された文字列の親要素を取得
+                        let selectedElement = range.commonAncestorContainer.nodeType === Node.ELEMENT_NODE
+                            ? range.commonAncestorContainer.closest('div._div_ParagraphSentence, div._div_ArticleTitle')
+                            : range.commonAncestorContainer.parentElement.closest('div._div_ParagraphSentence, div._div_ArticleTitle');
+                        console.log(selectedElement);
+                        
+                        if (selectedElement) {
+                            // 新しい <p> 要素を作成し、メモのテキストを追加
+                            const memoParagraph = document.createElement('p');
+                            memoParagraph.textContent = memoText;
+                            memoParagraph.classList.add('memotext_p', 'text-rose-300', 'text-xs');
+                            
+                            // メモを追加
+                            selectedElement.appendChild(memoParagraph);
+                            selectedElement = "";
+                            // メモを fullTextHTML に含める処理
+                            const contentsLawElement = document.getElementById('minpo_text');
+                            const fullTextHTML = contentsLawElement.innerHTML;
+                            
+                            // メモを保存する処理を追加する場合はここに記述
+                            // 例えば、Firestoreやローカルストレージに保存するなど
+                            update(ref(db, "users/" + uid + "/minpo/" + key), {
+                                minpo: fullTextHTML
+                            });
+                                    
+                            // テキストエリアを空にする
+                            document.getElementById('memotext').value = '';
+                            
+                            // <textarea>を非表示にする
+                            document.getElementById('textarea').style.display = 'none';
+
+                        } else {
+                            console.error('Selected element not found.');
+                        }
+                    });
+                    //閉じるボタンを押された時
+                    document.getElementById('memoclose').addEventListener('click', function() {
+                        // <textarea>を非表示にする
+                        document.getElementById('textarea').style.display = 'none';
+                    });
+                } else if (event.key === '5') {
+                    // spanタグとその関連するメモを削除する処理
+                    const container = range.commonAncestorContainer;
+                    let spanToRemove;
+                    
+                    if (container.nodeType === Node.TEXT_NODE) {
+                        // 親ノードがspanタグかどうかを確認
+                        if (container.parentNode.tagName === 'SPAN') {
+                            spanToRemove = container.parentNode;
+                        }
+                    } else if (container.nodeType === Node.ELEMENT_NODE) {
+                        // 選択範囲内のspanタグを取得
+                        const spans = container.querySelectorAll('span.bg-yellow-200, span.bg-orange-300, span.bg-lime-300, span.border-b-rose-300');
+                        spans.forEach(span => {
+                            if (span.textContent.includes(selectedText)) {
+                                spanToRemove = span;
+                            }
+                        });
+                    }
+            
+                    // spanタグとその関連するメモを削除
+                    if (spanToRemove) {
+                        const parent = spanToRemove.parentNode;
+                        while (spanToRemove.firstChild) {
+                            parent.insertBefore(spanToRemove.firstChild, spanToRemove);
+                        }
+                        parent.removeChild(spanToRemove);
+            
+                        // そのspanタグに続くメモ要素も削除
+                        const nextSibling = parent.querySelector('.memotext_p');
+                        if (nextSibling) {
+                            nextSibling.remove();
+                        }
+            
+                        // メモを fullTextHTML に含める処理
+                        const contentsLawElement = document.getElementById('minpo_text');
+                        const fullTextHTML = contentsLawElement.innerHTML;
+            
+                        // メモを保存する処理を追加する場合はここに記述
+                        // 例えば、Firestoreやローカルストレージに保存するなど
+                        update(ref(db, "users/" + uid + "/minpo/" + key), {
+                            minpo: fullTextHTML
+                        });
+                    }
+                } else {
+                    return; // 他のキーが押された場合は何もしない
+                }
+                        
                 // <main id="contentsLaw">配下の全HTMLを取得
                 const contentsLawElement = document.getElementById('minpo_text');
                 const fullTextHTML = contentsLawElement.innerHTML;
-            
-                console.log(fullTextHTML); // 取得したHTMLをコンソールに表示（必要に応じて他の処理を追加）
-            
-                update(ref(db, "users/" + uid + "/mimpo/" + key), {
+                        
+                update(ref(db, "users/" + uid + "/minpo/" + key), {
                     minpo: fullTextHTML
                 });
-            
                 
-            
-            
             
             });//document.addEventListener('keydown', function(event) {
         
         
         });//end onChildAdded(dbRefminpo,function(data){
+        //end データ表示 民法
 
 
-
-    }//end if (user) {
+    } else {//end if (user) {
+        _redirect();  // User is signed out
+    }
 })//end onAuthStateChanged(auth, (user) => {
+
+
+
+
+//###############################################
+//Logout処理
+let logoutButton = document.getElementById('out');
+logoutButton.addEventListener('click', logoutbutotnClick);
+function logoutbutotnClick(){
+    // signInWithRedirect(auth, provider);
+    signOut(auth).then(() => {
+        // Sign-out successful.
+        _redirect();
+    }).catch((error) => {
+        // An error happened.
+        console.error(error);
+    });
+}
+
+//###############################################
+//Login画面へリダイレクト(関数作成)
+function _redirect(){
+    location.href="./index.html";
+}
+
